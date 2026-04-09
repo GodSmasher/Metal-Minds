@@ -1,0 +1,17 @@
+<div class="card">
+  <h3>News Feed</h3>
+  <div class="articles">
+    @for (article of api.signalData().top_articles; track article.title) {
+      <div class="article">
+        <div class="article-header">
+          <span class="source">{{ article.source }}</span>
+          <span class="sentiment" [style.color]="sentimentColor(article.sentiment)">
+            {{ article.sentiment > 0 ? '+' : '' }}{{ article.sentiment | number:'1.2-2' }}
+          </span>
+        </div>
+        <p class="title">{{ article.title }}</p>
+        <span class="date">{{ article.published | date:'short' }}</span>
+      </div>
+    }
+  </div>
+</div>

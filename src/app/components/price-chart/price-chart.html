@@ -1,0 +1,12 @@
+<div class="card">
+  <div class="chart-header">
+    <span class="label">{{ api.commodity() }} — Daily</span>
+    <div class="ticker">
+      <span class="price">${{ api.currentPrice() | number:'1.0-0' }}</span>
+      <span [class]="api.priceChange() >= 0 ? 'text-green' : 'text-red'">
+        {{ api.priceChange() >= 0 ? '+' : '' }}{{ api.priceChange() | number:'1.2-2' }}%
+      </span>
+    </div>
+  </div>
+  <div #chart></div>
+</div>

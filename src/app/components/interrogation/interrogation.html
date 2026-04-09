@@ -1,0 +1,30 @@
+<div class="card chat-container">
+  <h3>Interrogation Mode</h3>
+  <div class="messages" #messagesContainer>
+    @if (api.chatMessages().length === 0) {
+      <div class="empty-state">
+        Ask Signal anything about the current {{ api.commodity() }} analysis.
+      </div>
+    }
+    @for (msg of api.chatMessages(); track $index) {
+      <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+        <div class="bubble">{{ msg.content }}</div>
+      </div>
+    }
+    @if (sending()) {
+      <div class="message assistant">
+        <div class="bubble typing">Analyzing...</div>
+      </div>
+    }
+  </div>
+  <div class="input-row">
+    <input
+      type="text"
+      placeholder="Challenge the decision..."
+      [value]="input()"
+      (input)="input.set($any($event.target).value)"
+      (keydown)="onKeydown($event)"
+    />
+    <button (click)="send()" [disabled]="sending()">Send</button>
+  </div>
+</div>
