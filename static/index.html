@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pacemaker.ai Decision Cockpit</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">pacemaker.ai</p>
+          <h1>Commodity procurement decision cockpit</h1>
+          <p class="hero-copy">
+            Turn market prices and commodity news into explainable buy, wait, and hedge decisions.
+          </p>
+        </div>
+        <div class="controls">
+          <label>
+            Metal
+            <select id="metal-select"></select>
+          </label>
+          <label>
+            Decision date
+            <select id="date-select"></select>
+          </label>
+          <label>
+            Horizon
+            <select id="horizon-select">
+              <option value="10d">10 trading days</option>
+              <option value="20d">20 trading days</option>
+            </select>
+          </label>
+          <button id="refresh-button" type="button">Refresh pipeline</button>
+        </div>
+      </header>
+
+      <main class="dashboard-grid">
+        <section class="panel decision-panel">
+          <div class="panel-header">
+            <h2>Decision card</h2>
+            <span id="confidence-pill" class="pill">Confidence</span>
+          </div>
+          <div class="decision-hero">
+            <div>
+              <p class="metric-label">Recommended action</p>
+              <h3 id="decision-action">Loading</h3>
+              <p id="decision-summary" class="subtle"></p>
+            </div>
+            <div class="score-grid">
+              <div>
+                <span>Pressure</span>
+                <strong id="pressure-score">0</strong>
+                <p id="pressure-help" class="score-help"></p>
+              </div>
+              <div>
+                <span>Risk</span>
+                <strong id="risk-score">0</strong>
+                <p id="risk-help" class="score-help"></p>
+              </div>
+              <div>
+                <span>Conviction</span>
+                <strong id="conviction-score">0</strong>
+                <p id="conviction-help" class="score-help"></p>
+              </div>
+            </div>
+          </div>
+          <div class="split-columns">
+            <div>
+              <h4>Why this recommendation</h4>
+              <ul id="rationale-list"></ul>
+            </div>
+            <div>
+              <h4>What could change it</h4>
+              <ul id="triggers-list"></ul>
+            </div>
+          </div>
+          <div>
+            <h4>Recommended actions</h4>
+            <ul id="actions-list"></ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Why now</h2>
+            <span id="regime-badge" class="badge"></span>
+          </div>
+          <div class="subpanel">
+            <h4>Data to insight to decision</h4>
+            <p id="narrative-summary" class="story-copy"></p>
+            <ul id="decision-story-list"></ul>
+          </div>
+          <div class="kpi-row" id="price-context"></div>
+          <div class="subpanel">
+            <h4>Dominant themes</h4>
+            <div id="theme-tags" class="tag-cloud"></div>
+          </div>
+          <div class="subpanel">
+            <h4>Counterpoints</h4>
+            <ul id="counterpoints-list"></ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Predicted Vs Actual</h2>
+            <span class="badge">Base case vs realized</span>
+          </div>
+          <div class="subtle">High-risk mode is applied by default. For past dates, the table compares the base-case forecast with actual realized prices.</div>
+          <div id="prediction-table"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Scenario engine</h2>
+            <span class="badge">Best / Base / Worst</span>
+          </div>
+          <div id="scenario-grid" class="scenario-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Evidence trail</h2>
+            <span class="badge">News + analogs</span>
+          </div>
+          <div class="split-columns">
+            <div>
+              <h4>News clusters</h4>
+              <div id="news-clusters" class="stack"></div>
+            </div>
+            <div>
+              <h4>Historical analogs</h4>
+              <div id="analog-events" class="stack"></div>
+            </div>
+          </div>
+          <div class="subpanel">
+            <h4>News to price linkage</h4>
+            <ul id="linkage-list"></ul>
+          </div>
+        </section>
+
+        <section class="panel decision-panel">
+          <div class="panel-header">
+            <h2>Historical verification</h2>
+            <span id="verification-pill" class="pill">Pending</span>
+          </div>
+          <div class="split-columns">
+            <div>
+              <h4>Outcome vs actual data</h4>
+              <div id="historical-kpis" class="kpi-row"></div>
+            </div>
+            <div>
+              <h4>Interpretation</h4>
+              <ul id="historical-list"></ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

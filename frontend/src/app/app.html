@@ -1,0 +1,254 @@
+<main class="page-shell">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">pacemaker.ai Angular cockpit</p>
+      <h1>Procurement decisions with date-aware verification</h1>
+      <p class="hero-copy">
+        Select any historical date, set the buyer's risk appetite, and compare the recommendation with the move that
+        actually happened afterward.
+      </p>
+    </div>
+    <section class="controls">
+      <label>
+        Metal
+        <select [(ngModel)]="selectedMetal" (ngModelChange)="onMetalChange()">
+          @for (metal of metals(); track metal) {
+            <option [value]="metal">{{ metal | titlecase }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Decision date
+        <select [(ngModel)]="selectedDate" (ngModelChange)="onFiltersChange()">
+          @for (date of dates(); track date) {
+            <option [value]="date">{{ date }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Horizon
+        <select [(ngModel)]="selectedHorizon" (ngModelChange)="onFiltersChange()">
+          <option value="10d">10 trading days</option>
+          <option value="20d">20 trading days</option>
+        </select>
+      </label>
+      <label>
+        Risk appetite
+        <select [(ngModel)]="selectedRisk" (ngModelChange)="onFiltersChange()">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+    </section>
+  </header>
+
+  @if (loading()) {
+    <section class="panel decision-panel">
+      <p>Loading model outputs for {{ selectedMetal }}...</p>
+    </section>
+  }
+
+  @if (error()) {
+    <section class="panel decision-panel error-panel">
+      <p>{{ error() }}</p>
+    </section>
+  }
+
+  @if (decision(); as decision) {
+    <section class="dashboard-grid">
+      <article class="panel decision-panel">
+        <div class="panel-header">
+          <h2>Decision card</h2>
+          <span class="pill">{{ decision.confidence_band }} confidence</span>
+        </div>
+        <div class="decision-hero">
+          <div>
+            <p class="metric-label">Recommended action</p>
+            <h3>{{ decision.action }}</h3>
+            <p class="subtle">
+              {{ decision.decision_date }} • risk appetite {{ decision.risk_appetite }} • confidence
+              {{ decision.confidence * 100 | number: '1.0-0' }}%
+            </p>
+          </div>
+          <div class="score-grid">
+            <div>
+              <span>Pressure</span>
+              <strong>{{ decision.pressure_score }}</strong>
+            </div>
+            <div>
+              <span>Risk</span>
+              <strong>{{ decision.risk_score }}</strong>
+            </div>
+            <div>
+              <span>Conviction</span>
+              <strong>{{ decision.conviction_score }}</strong>
+            </div>
+          </div>
+        </div>
+        <div class="split-columns">
+          <div>
+            <h4>Why this recommendation</h4>
+            <ul>
+              @for (item of decision.rationale; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </div>
+          <div>
+            <h4>What could change it</h4>
+            <ul>
+              @for (item of decision.triggers_to_watch; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+        <div>
+          <h4>Recommended actions</h4>
+          <ul>
+            @for (item of decision.recommended_actions; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Why now</h2>
+          <span class="badge">{{ decision.why_now.price_context.regime }}</span>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span>Latest price</span>
+            <strong>{{ decision.why_now.latest_price | number: '1.0-2' }}</strong>
+          </div>
+          <div class="kpi-card">
+            <span>1d return</span>
+            <strong>{{ decision.why_now.price_context.return_1d_pct }}%</strong>
+          </div>
+          <div class="kpi-card">
+            <span>5d return</span>
+            <strong>{{ decision.why_now.price_context.return_5d_pct }}%</strong>
+          </div>
+          <div class="kpi-card">
+            <span>20d return</span>
+            <strong>{{ decision.why_now.price_context.return_20d_pct }}%</strong>
+          </div>
+          <div class="kpi-card">
+            <span>Up probability</span>
+            <strong>{{ decision.why_now.price_context.up_probability * 100 | number: '1.0-0' }}%</strong>
+          </div>
+        </div>
+        <div class="subpanel">
+          <h4>Dominant themes</h4>
+          <div class="tag-cloud">
+            @for (item of objectEntries(decision.why_now.theme_counts); track item[0]) {
+              <span class="tag">{{ item[0] }} ({{ item[1] }})</span>
+            }
+          </div>
+        </div>
+        <div class="subpanel">
+          <h4>Counterpoints</h4>
+          <ul>
+            @for (item of decision.counterpoints; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Scenario engine</h2>
+          <span class="badge">Best / Base / Worst</span>
+        </div>
+        <div class="scenario-grid">
+          @for (scenario of scenarioEntries(decision.scenarios); track scenario[0]) {
+            <div class="scenario-card">
+              <h4>{{ scenario[0] | titlecase }}</h4>
+              <p><strong>{{ scenario[1].direction }}</strong> {{ scenario[1].price_change_pct }}%</p>
+              <p>{{ scenario[1].narrative }}</p>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Evidence trail</h2>
+          <span class="badge">News + analogs</span>
+        </div>
+        <div class="split-columns">
+          <div class="stack">
+            <h4>News clusters</h4>
+            @for (cluster of decision.why_now.news_clusters; track cluster.date + cluster.theme) {
+              <article>
+                <h4>{{ cluster.theme }}</h4>
+                <p>{{ cluster.summary }}</p>
+                <p><strong>{{ cluster.date }}</strong> • {{ cluster.article_count }} articles • {{ cluster.uncertainty }} uncertainty</p>
+              </article>
+            }
+          </div>
+          <div class="stack">
+            <h4>Historical analogs</h4>
+            @for (impact of decision.why_now.analog_events; track impact.horizon + impact.reaction_label + impact.confidence) {
+              <article>
+                <h4>{{ impact.reaction_label }}</h4>
+                <p>{{ impact.horizon }} reaction: {{ impact.avg_reaction * 100 | number: '1.1-1' }}% • confidence {{ impact.confidence * 100 | number: '1.0-0' }}%</p>
+                <p>{{ impact.lead_lag_signal }}</p>
+              </article>
+            }
+          </div>
+        </div>
+      </article>
+
+      <article class="panel decision-panel">
+        <div class="panel-header">
+          <h2>Historical verification</h2>
+          <span class="pill">{{ decision.historical_performance.verification_status }}</span>
+        </div>
+        <div class="split-columns">
+          <div>
+            <h4>Outcome vs actual data</h4>
+            <div class="kpi-row">
+              <div class="kpi-card">
+                <span>Entry</span>
+                <strong>{{ decision.historical_performance.entry_price | number: '1.0-2' }}</strong>
+              </div>
+              <div class="kpi-card">
+                <span>Future</span>
+                <strong>{{ decision.historical_performance.future_price | number: '1.0-2' }}</strong>
+              </div>
+              <div class="kpi-card">
+                <span>Realized move</span>
+                <strong>{{ decision.historical_performance.realized_return_pct }}%</strong>
+              </div>
+              <div class="kpi-card">
+                <span>Horizon end</span>
+                <strong>{{ decision.historical_performance.horizon_end_date }}</strong>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4>Interpretation</h4>
+            <ul>
+              <li>Expected direction: {{ decision.historical_performance.benchmark.expected_direction }}.</li>
+              <li>Actual direction: {{ decision.historical_performance.benchmark.actual_direction }}.</li>
+              <li>
+                @if (decision.historical_performance.evaluation_available) {
+                  Recommendation
+                  {{ decision.historical_performance.recommendation_was_correct ? 'matched' : 'did not match' }}
+                  realized price behavior.
+                } @else {
+                  Not enough future data is available yet to verify this decision.
+                }
+              </li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    </section>
+  }
+</main>
