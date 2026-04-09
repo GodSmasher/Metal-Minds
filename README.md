@@ -1,59 +1,60 @@
-# Signal
+# pacemaker.ai prototype
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+An end-to-end hackathon prototype for explainable commodity procurement decisions using LME-style price history and GDELT-style news.
 
-## Development server
+## What it includes
+- Pure Python ingestion and signal pipeline with no external dependencies
+- Explainable decision engine for `Buy now`, `Wait`, `Stay lean`, and hedging-oriented guidance
+- Static decision cockpit UI served by a local HTTP server
+- Sample LME and GDELT CSVs so the demo works immediately
+- API endpoints aligned to the hackathon plan
 
-To start a local development server, run:
+## Project layout
+- `app.py`: local server and JSON API
+- `pacemaker/`: ingestion, features, news clustering, event-study logic, and decision engine
+- `static/`: cockpit UI
+- `data/lme/` and `data/gdelt/`: drop real challenge CSVs here
+- `tests/`: lightweight validation
 
+## Run locally
 ```bash
-ng serve
+python3 app.py
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Then open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-## Code scaffolding
+## API
+- `GET /api/metals`
+- `GET /api/decision?metal=copper&horizon=10d`
+- `GET /api/news-clusters?metal=copper`
+- `GET /api/analog-events?metal=copper&theme=supply%20disruption`
+- `GET /api/scenarios?metal=copper&horizon=10d`
+- `GET /api/refresh`
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Data expectations
 
-```bash
-ng generate component component-name
-```
+### LME CSV
+Expected columns:
+- `date`
+- `metal` or `commodity`
+- `price` or `close`
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### GDELT CSV
+Expected columns:
+- `date`
+- `title`
+- `source`
+- `region` or `location`
+- `tone`
+- `body`, `text`, or `summary`
 
-```bash
-ng generate --help
-```
+## Pipeline summary
+1. Normalize raw CSVs into canonical price and news records.
+2. Compute rolling price features, regime labels, and anomaly flags.
+3. Deduplicate and cluster news by date, metal tags, and theme.
+4. Estimate event impacts with simple historical follow-through logic.
+5. Convert price, news, and analog evidence into a procurement recommendation.
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Notes
+- The current news clustering and summarization layers are heuristic to stay dependency-free.
+- The architecture is intentionally modular so you can later swap in embeddings, real LLM summaries, or stronger models.
